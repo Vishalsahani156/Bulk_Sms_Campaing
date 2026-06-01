@@ -5,7 +5,6 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
-  MessageSquareText,
   Send,
   Settings,
   Sparkles,
@@ -28,7 +27,6 @@ const nav = [
   { label: "Campaigns", to: "/campaigns", icon: Send },
   { label: "Contacts", to: "/contacts", icon: Contact2 },
   { label: "SMS Templates", to: "/sms-templates", icon: FileText },
-  { label: "Templates", to: "/templates", icon: MessageSquareText },
   { label: "Analytics", to: "/analytics", icon: BarChart3 },
   { label: "Billing", to: "/billing", icon: Wallet },
 ] as const;
