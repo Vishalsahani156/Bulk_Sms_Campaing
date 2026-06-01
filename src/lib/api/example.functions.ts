@@ -10,6 +10,12 @@ import { getServerConfig } from "../config.server";
 // code here still ships to the client; for truly server-only helpers, put
 // them in a .server.ts file. Use this pattern instead of Supabase Edge
 // Functions for server logic.
+//
+// For authenticated handlers, chain requireSupabaseAuth from
+// @/integrations/supabase/auth-middleware (Bearer token is attached by
+// attachSupabaseAuth in src/start.ts):
+//   .middleware([requireSupabaseAuth])
+//   .handler(async ({ context }) => { /* context.userId */ })
 
 export const getGreeting = createServerFn({ method: "POST" })
   .inputValidator(z.object({ name: z.string().min(1) }))

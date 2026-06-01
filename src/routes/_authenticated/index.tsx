@@ -7,7 +7,7 @@ import { CampaignsTable } from "@/components/dashboard/campaigns-table";
 import { ChannelPie, DeliveryChart } from "@/components/dashboard/charts";
 import { campaigns, channelData, kpiMetrics, seriesData } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Pulse SMS — Dashboard" },
@@ -19,15 +19,16 @@ export const Route = createFileRoute("/")({
 
 function DashboardPage() {
   return (
-    <DashboardLayout title="Overview" subtitle="Real-time messaging performance across all channels">
-      {/* KPIs */}
+    <DashboardLayout
+      title="Overview"
+      subtitle="Real-time messaging performance across all channels"
+    >
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpiMetrics.map((m, i) => (
           <KpiCard key={m.label} metric={m} index={i} />
         ))}
       </section>
 
-      {/* Charts */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
         <GlassCard className="lg:col-span-2 p-5" glow>
           <div className="flex items-center justify-between mb-4">
@@ -67,7 +68,6 @@ function DashboardPage() {
         </GlassCard>
       </section>
 
-      {/* Quick stats row */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
         {[
           { icon: Send, label: "Avg send speed", value: "12,400/s", hint: "+8% vs last week" },
@@ -92,7 +92,6 @@ function DashboardPage() {
         ))}
       </section>
 
-      {/* Campaigns table */}
       <section className="mt-6">
         <div className="flex items-center justify-between mb-3">
           <div>

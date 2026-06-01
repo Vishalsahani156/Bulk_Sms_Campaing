@@ -8,7 +8,7 @@ import { contacts } from "@/lib/mock-data";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/contacts")({
+export const Route = createFileRoute("/_authenticated/contacts")({
   head: () => ({ meta: [{ title: "Contacts — Pulse SMS" }] }),
   component: ContactsPage,
 });
@@ -28,7 +28,6 @@ function ContactsPage() {
 
   return (
     <DashboardLayout title="Contacts" subtitle="Manage your audience and segments">
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {statCards.map((s, i) => (
           <motion.div
@@ -38,7 +37,12 @@ function ContactsPage() {
             transition={{ delay: i * 0.06, duration: 0.35 }}
           >
             <GlassCard className="p-4 flex items-center gap-3">
-              <div className={cn("h-9 w-9 rounded-lg bg-muted/60 flex items-center justify-center", s.color)}>
+              <div
+                className={cn(
+                  "h-9 w-9 rounded-lg bg-muted/60 flex items-center justify-center",
+                  s.color,
+                )}
+              >
                 <s.icon className="h-4 w-4" />
               </div>
               <div>
@@ -50,7 +54,6 @@ function ContactsPage() {
         ))}
       </div>
 
-      {/* Table */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

@@ -1,20 +1,33 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   Contact2,
+  FileText,
   LayoutDashboard,
+  LogOut,
   MessageSquareText,
   Send,
   Settings,
   Sparkles,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { getUserDisplayName, getUserInitials } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const nav = [
   { label: "Overview", to: "/", icon: LayoutDashboard },
   { label: "Campaigns", to: "/campaigns", icon: Send },
   { label: "Contacts", to: "/contacts", icon: Contact2 },
+  { label: "SMS Templates", to: "/sms-templates", icon: FileText },
   { label: "Templates", to: "/templates", icon: MessageSquareText },
   { label: "Analytics", to: "/analytics", icon: BarChart3 },
   { label: "Billing", to: "/billing", icon: Wallet },
@@ -22,6 +35,21 @@ const nav = [
 
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+  const { session, signOut } = useAuth();
+  const displayName = getUserDisplayName(session);
+  const initials = getUserInitials(session);
+  const email = session?.user?.email ?? "";
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out");
+      navigate({ to: "/login" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not sign out");
+    }
+  };
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl">
@@ -70,17 +98,37 @@ export function AppSidebar() {
           <Settings className="h-4 w-4" />
           Settings
         </Link>
-        <div className="mt-3 rounded-xl glass p-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-              AK
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium truncate">Alex Kim</p>
-              <p className="text-[10px] text-muted-foreground truncate">acme.co</p>
-            </div>
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="mt-3 w-full rounded-xl glass p-3 text-left hover:bg-accent/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                  {initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium truncate">{displayName}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{email}</p>
+                </div>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              {email || "Not signed in"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="text-destructive focus:text-destructive"
+            >
+              <LogOut className="h-4 w-4" />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   );

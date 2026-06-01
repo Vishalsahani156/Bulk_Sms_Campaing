@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { redirectIfAuthenticated } from "@/lib/auth";
-import { mockForgotPassword, mockSignIn } from "@/lib/mock-auth";
+import { mockRegister } from "@/lib/mock-auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthForm } from "@/components/auth/auth-form";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,114 +11,83 @@ type AuthSearch = {
   redirect?: string;
 };
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/register")({
   validateSearch: (search: Record<string, unknown>): AuthSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
   beforeLoad: ({ search }) => redirectIfAuthenticated({ search }),
   head: () => ({
     meta: [
-      { title: "Sign in — Pulse SMS" },
-      { name: "description", content: "Access your Pulse SMS dashboard." },
+      { title: "Create account — Pulse SMS" },
+      { name: "description", content: "Create your Pulse SMS account." },
     ],
   }),
-  component: LoginPage,
+  component: RegisterPage,
 });
 
-function LoginPage() {
+function RegisterPage() {
   const navigate = useNavigate();
   const { refreshSession } = useAuth();
   const { redirect } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
-
-  const goAfterAuth = () => {
-    refreshSession();
-    navigate({ to: redirect ?? "/" });
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await new Promise((r) => setTimeout(r, 400));
-      mockSignIn(email, password);
-      toast.success("Welcome back! (demo sign-in)");
-      goAfterAuth();
+      mockRegister(email, password);
+      refreshSession();
+      toast.success("Account created (demo) — signed in!");
+      navigate({ to: redirect ?? "/" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sign-in failed");
+      toast.error(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      toast.error("Enter your email address first.");
-      return;
-    }
-    setResetLoading(true);
-    try {
-      await new Promise((r) => setTimeout(r, 300));
-      mockForgotPassword(email);
-      toast.info("Demo mode: no reset email sent. Use any password to sign in.");
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Demo mode — any email and password will sign you in."
+      title="Create your account"
+      subtitle="Demo mode — no real account is created; any email works."
       footer={
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/register"
+            to="/login"
             search={{ redirect }}
             className="text-primary font-medium hover:underline"
           >
-            Sign up
+            Sign in
           </Link>
         </p>
       }
     >
       <AuthForm
-        mode="signin"
+        mode="signup"
         loading={loading}
-        submitLabel="Sign in"
+        submitLabel="Create account"
         email={email}
         password={password}
         showPassword={showPassword}
-        remember={remember}
-        showRemember
+        remember={false}
+        showRemember={false}
         useMockOAuth
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onTogglePassword={() => setShowPassword((s) => !s)}
-        onRememberChange={setRemember}
+        onRememberChange={() => {}}
         onSubmit={handleSubmit}
         oauthOnSuccess={() => {
           refreshSession();
           toast.success("Signed in (demo)");
-          goAfterAuth();
+          navigate({ to: redirect ?? "/" });
         }}
         oauthOnError={(message) => toast.error(message)}
-        forgotPasswordSlot={
-          <button
-            type="button"
-            disabled={resetLoading}
-            onClick={handleForgotPassword}
-            className="text-[11px] text-primary hover:underline disabled:opacity-50"
-          >
-            {resetLoading ? "Sending…" : "Forgot password?"}
-          </button>
-        }
       />
     </AuthShell>
   );
