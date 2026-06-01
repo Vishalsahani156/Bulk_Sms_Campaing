@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "./status-badge";
 import type { Campaign, CampaignStatus } from "@/types/sms";
+import { formatInr } from "@/lib/billing-pricing";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -123,7 +124,7 @@ export function CampaignsTable({ data }: Props) {
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-right tabular-nums font-medium">
-                    ${c.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {formatInr(c.cost)}
                   </td>
                   <td className="px-4 py-3.5">
                     <DropdownMenu>

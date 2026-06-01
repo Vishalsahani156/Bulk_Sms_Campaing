@@ -1,4 +1,5 @@
 import type { Campaign, Contact, KpiMetric, SeriesPoint, ChannelSlice } from "@/types/sms";
+import { calculateCampaignCostInr, formatInrCompact } from "@/lib/billing-pricing";
 
 export const kpiMetrics: KpiMetric[] = [
   {
@@ -24,7 +25,7 @@ export const kpiMetrics: KpiMetric[] = [
   },
   {
     label: "Revenue",
-    value: "$48,210",
+    value: formatInrCompact(48_210),
     change: 24.8,
     trend: "up",
     spark: [22, 25, 28, 30, 34, 32, 38, 42, 40, 44, 46, 48],
@@ -58,7 +59,7 @@ export const campaigns: Campaign[] = Array.from({ length: 14 }, (_, i) => {
   const recipients = Math.round(1000 + Math.random() * 80000);
   const delivered = Math.round(recipients * (0.9 + Math.random() * 0.09));
   const status = statuses[i % statuses.length];
-  return {
+  const campaign: Campaign = {
     id: `cmp_${1000 + i}`,
     name: [
       "Black Friday Blast",
@@ -81,10 +82,12 @@ export const campaigns: Campaign[] = Array.from({ length: 14 }, (_, i) => {
     delivered: status === "draft" || status === "scheduled" ? 0 : delivered,
     failed: status === "draft" || status === "scheduled" ? 0 : recipients - delivered,
     deliveryRate: status === "draft" || status === "scheduled" ? 0 : +((delivered / recipients) * 100).toFixed(1),
-    cost: +(recipients * 0.012).toFixed(2),
+    cost: 0,
     sender: senders[i % senders.length],
     createdAt: new Date(Date.now() - i * 86400000 * 1.7).toISOString(),
   };
+  campaign.cost = calculateCampaignCostInr(campaign);
+  return campaign;
 });
 
 const contactNames = [
