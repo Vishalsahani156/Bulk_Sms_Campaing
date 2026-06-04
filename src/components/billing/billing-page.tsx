@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBilling } from "@/hooks/use-billing";
 import { useAuth } from "@/hooks/use-auth";
 import { getUserDisplayName } from "@/lib/auth";
-import { campaigns } from "@/lib/mock-data";
 import { isRazorpayConfigured } from "@/lib/razorpay-checkout";
 import { BillingSummaryCards } from "./billing-summary-cards";
 import { UsageBreakdownTable } from "./usage-breakdown-table";
@@ -19,7 +18,7 @@ import { TopUpDialog } from "./top-up-dialog";
 
 export function BillingPage() {
   const { user } = useAuth();
-  const { balanceInr, transactions, savedMethods, isLoading, applyTopUp } = useBilling();
+  const { balanceInr, transactions, savedMethods, usage, isLoading, refresh } = useBilling();
   const [topUpOpen, setTopUpOpen] = useState(false);
 
   const displayName = user ? getUserDisplayName(user) : undefined;
@@ -28,17 +27,9 @@ export function BillingPage() {
 
   const handleTopUpSuccess = (result: {
     amountInr: number;
-    method: import("@/types/billing").PaymentMethodType;
-    razorpayPaymentId: string;
-    razorpayOrderId: string;
+    newBalance: number;
   }) => {
-    applyTopUp({
-      amountInr: result.amountInr,
-      method: result.method,
-      razorpayPaymentId: result.razorpayPaymentId,
-      razorpayOrderId: result.razorpayOrderId,
-      note: "Razorpay wallet top-up",
-    });
+    refresh();
     toast.success(
       `Added ${result.amountInr.toLocaleString("en-IN", { style: "currency", currency: "INR" })} to your wallet`,
     );
@@ -53,8 +44,8 @@ export function BillingPage() {
             <p className="text-sm text-amber-200/90">
               Razorpay is not configured. Add{" "}
               <code className="text-xs bg-muted px-1 rounded">VITE_RAZORPAY_KEY_ID</code> and server
-              keys to <code className="text-xs bg-muted px-1 rounded">.env</code> to enable UPI and
-              Google Pay payments.
+              keys to <code className="text-xs bg-muted px-1 rounded">backend/.env</code> to enable
+              UPI and Google Pay payments.
             </p>
           </GlassCard>
         )}
@@ -75,7 +66,7 @@ export function BillingPage() {
           </Button>
         </GlassCard>
 
-        {!isLoading && <BillingSummaryCards campaigns={campaigns} balanceInr={balanceInr} />}
+        {!isLoading && <BillingSummaryCards usage={usage} balanceInr={balanceInr} />}
 
         <Tabs defaultValue="usage" className="space-y-4">
           <TabsList className="glass-strong">
@@ -85,7 +76,7 @@ export function BillingPage() {
           </TabsList>
 
           <TabsContent value="usage" className="space-y-4 mt-0">
-            <UsageBreakdownTable campaigns={campaigns} />
+            <UsageBreakdownTable usage={usage} />
             <p className="text-xs text-muted-foreground text-center">
               Need more detail?{" "}
               <Link to="/campaigns" className="text-primary hover:underline">

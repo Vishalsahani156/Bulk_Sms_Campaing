@@ -35,8 +35,8 @@ export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
-  const displayName = getUserDisplayName(session);
-  const initials = getUserInitials(session);
+  const displayName = getUserDisplayName(session?.user ?? null);
+  const initials = getUserInitials(session?.user ?? null);
   const email = session?.user?.email ?? "";
 
   const handleSignOut = async () => {

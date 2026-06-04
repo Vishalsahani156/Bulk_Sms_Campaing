@@ -2,10 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { redirectIfAuthenticated } from "@/lib/auth";
-import { mockForgotPassword, mockSignIn } from "@/lib/mock-auth";
+import { login as apiLogin, forgotPassword } from "@/lib/api/auth.api";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthForm } from "@/components/auth/auth-form";
 import { useAuth } from "@/hooks/use-auth";
+import { ApiError } from "@/lib/api/client";
 
 type AuthSearch = {
   redirect?: string;
@@ -45,12 +46,12 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 400));
-      mockSignIn(email, password);
-      toast.success("Welcome back! (demo sign-in)");
+      await apiLogin({ email, password });
+      toast.success("Welcome back!");
       goAfterAuth();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sign-in failed");
+      const message = err instanceof ApiError ? err.message : "Sign-in failed";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -63,9 +64,8 @@ function LoginPage() {
     }
     setResetLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      mockForgotPassword(email);
-      toast.info("Demo mode: no reset email sent. Use any password to sign in.");
+      await forgotPassword(email);
+      toast.info("If an account exists, a reset link will be sent.");
     } finally {
       setResetLoading(false);
     }
@@ -74,7 +74,7 @@ function LoginPage() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Demo mode — any email and password will sign you in."
+      subtitle="Sign in to your Pulse SMS account."
       footer={
         <p className="text-center text-xs text-muted-foreground mt-6">
           Don&apos;t have an account?{" "}
@@ -97,7 +97,7 @@ function LoginPage() {
         showPassword={showPassword}
         remember={remember}
         showRemember
-        useMockOAuth
+        useMockOAuth={false}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onTogglePassword={() => setShowPassword((s) => !s)}
@@ -105,7 +105,7 @@ function LoginPage() {
         onSubmit={handleSubmit}
         oauthOnSuccess={() => {
           refreshSession();
-          toast.success("Signed in (demo)");
+          toast.success("Signed in");
           goAfterAuth();
         }}
         oauthOnError={(message) => toast.error(message)}

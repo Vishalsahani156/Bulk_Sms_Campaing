@@ -1,70 +1,54 @@
-import { useCallback, useEffect, useState } from "react";
-import type { SmsTemplate, SmsTemplateInput } from "@/types/sms-template";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { SmsTemplateInput } from "@/types/sms-template";
 import {
-  createSmsTemplate,
-  deleteSmsTemplate,
-  duplicateSmsTemplate,
-  listSmsTemplates,
-  updateSmsTemplate,
-} from "@/lib/sms-template-storage";
+  getTemplates,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+  duplicateTemplate,
+} from "@/lib/api/templates.api";
 
 export function useSmsTemplates() {
-  const [templates, setTemplates] = useState<SmsTemplate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(() => {
-    setTemplates(listSmsTemplates());
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(refresh, 350);
-    return () => window.clearTimeout(timer);
-  }, [refresh]);
-
-  const create = useCallback(
-    (input: SmsTemplateInput) => {
-      const created = createSmsTemplate(input);
-      refresh();
-      return created;
+  const query = useQuery({
+    queryKey: ["templates"],
+    queryFn: async () => {
+      const res = await getTemplates();
+      return res.items;
     },
-    [refresh],
-  );
+  });
 
-  const update = useCallback(
-    (id: string, input: SmsTemplateInput) => {
-      const updated = updateSmsTemplate(id, input);
-      refresh();
-      return updated;
-    },
-    [refresh],
-  );
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
 
-  const remove = useCallback(
-    (id: string) => {
-      const ok = deleteSmsTemplate(id);
-      refresh();
-      return ok;
-    },
-    [refresh],
-  );
+  const create = useMutation({
+    mutationFn: (input: SmsTemplateInput) => createTemplate(input),
+    onSuccess: invalidate,
+  });
 
-  const duplicate = useCallback(
-    (id: string) => {
-      const copy = duplicateSmsTemplate(id);
-      refresh();
-      return copy;
-    },
-    [refresh],
-  );
+  const update = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: SmsTemplateInput }) =>
+      updateTemplate(id, input),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteTemplate(id),
+    onSuccess: invalidate,
+  });
+
+  const duplicate = useMutation({
+    mutationFn: (id: string) => duplicateTemplate(id),
+    onSuccess: invalidate,
+  });
 
   return {
-    templates,
-    isLoading,
-    refresh,
-    create,
-    update,
-    remove,
-    duplicate,
+    templates: query.data ?? [],
+    isLoading: query.isLoading,
+    refresh: invalidate,
+    create: (input: SmsTemplateInput) => create.mutateAsync(input),
+    update: (id: string, input: SmsTemplateInput) => update.mutateAsync({ id, input }),
+    remove: (id: string) => remove.mutateAsync(id),
+    duplicate: (id: string) => duplicate.mutateAsync(id),
   };
 }

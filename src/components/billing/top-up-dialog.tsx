@@ -26,6 +26,7 @@ interface Props {
     method: import("@/types/billing").PaymentMethodType;
     razorpayPaymentId: string;
     razorpayOrderId: string;
+    newBalance: number;
   }) => void;
 }
 

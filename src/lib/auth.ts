@@ -1,9 +1,23 @@
 import { redirect } from "@tanstack/react-router";
-import type { Session } from "@supabase/supabase-js";
-import { clearMockUser, getMockUser, mockUserToSession } from "@/lib/mock-auth";
+import { getAccessToken, clearAccessToken } from "@/lib/api/client";
+import { getMe, logout as apiLogout } from "@/lib/api/auth.api";
+import type { ApiUser } from "@/lib/api/auth.api";
 
-export async function getAuthSession() {
-  return mockUserToSession(getMockUser());
+export interface AuthSession {
+  user: ApiUser;
+  accessToken: string;
+}
+
+export async function getAuthSession(): Promise<AuthSession | null> {
+  const token = getAccessToken();
+  if (!token) return null;
+  try {
+    const user = await getMe();
+    return { user, accessToken: token };
+  } catch {
+    clearAccessToken();
+    return null;
+  }
 }
 
 export async function requireAuth({ location }: { location: { pathname: string; href: string } }) {
@@ -29,19 +43,19 @@ export async function redirectIfAuthenticated({ search }: { search: { redirect?:
 }
 
 export async function signOutUser() {
-  clearMockUser();
+  await apiLogout();
 }
 
-export function getUserDisplayName(session: Session | null): string {
-  if (!session?.user) return "Guest";
-  const meta = session.user.user_metadata;
-  if (meta?.full_name) return String(meta.full_name);
-  if (meta?.name) return String(meta.name);
-  return session.user.email?.split("@")[0] ?? "User";
+import type { ApiUser } from "@/lib/api/auth.api";
+
+export function getUserDisplayName(user: ApiUser | null): string {
+  if (!user) return "Guest";
+  if (user.name) return user.name;
+  return user.email?.split("@")[0] ?? "User";
 }
 
-export function getUserInitials(session: Session | null): string {
-  const name = getUserDisplayName(session);
+export function getUserInitials(user: ApiUser | null): string {
+  const name = getUserDisplayName(user);
   const parts = name.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();

@@ -1,5 +1,4 @@
-import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/api/billing.functions";
-import { inferPaymentMethodFromRazorpay } from "@/lib/billing-storage";
+import { createBillingOrder, verifyBillingPayment } from "@/lib/api/billing.api";
 import type { PaymentMethodType } from "@/types/billing";
 
 declare global {
@@ -62,6 +61,15 @@ function loadRazorpayScript(): Promise<void> {
   return scriptPromise;
 }
 
+function inferPaymentMethod(method?: string): PaymentMethodType {
+  if (!method) return "upi";
+  if (method === "upi") return "upi";
+  if (method === "wallet") return "wallet";
+  if (method === "card") return "card";
+  if (method === "netbanking") return "netbanking";
+  return "upi";
+}
+
 export function isRazorpayConfigured(): boolean {
   return Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID);
 }
@@ -75,6 +83,7 @@ export interface TopUpCheckoutInput {
     method: PaymentMethodType;
     razorpayPaymentId: string;
     razorpayOrderId: string;
+    newBalance: number;
   }) => void;
   onDismiss?: () => void;
   onError?: (error: Error) => void;
@@ -94,12 +103,7 @@ export async function openRazorpayTopUpCheckout(input: TopUpCheckoutInput): Prom
   try {
     await loadRazorpayScript();
 
-    const order = await createRazorpayOrder({
-      data: {
-        amountInr: input.amountInr,
-        userEmail: input.userEmail,
-      },
-    });
+    const order = await createBillingOrder(input.amountInr);
 
     if (!window.Razorpay) {
       throw new Error("Razorpay Checkout failed to initialize");
@@ -118,21 +122,20 @@ export async function openRazorpayTopUpCheckout(input: TopUpCheckoutInput): Prom
       theme: { color: "#6366f1" },
       handler: async (response) => {
         try {
-          const verified = await verifyRazorpayPayment({
-            data: {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            },
+          const verified = await verifyBillingPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
           });
 
-          const method = inferPaymentMethodFromRazorpay(verified.paymentMethod);
+          const method = inferPaymentMethod(undefined);
 
           input.onSuccess({
             amountInr: verified.amountInr,
             method,
-            razorpayPaymentId: verified.paymentId,
-            razorpayOrderId: verified.orderId,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            newBalance: verified.newBalance,
           });
         } catch (err) {
           input.onError?.(err instanceof Error ? err : new Error("Payment verification failed"));

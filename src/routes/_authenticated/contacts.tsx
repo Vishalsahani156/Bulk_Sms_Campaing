@@ -4,7 +4,8 @@ import { DashboardLayout } from "@/components/dashboard/layout";
 import { GlassCard } from "@/components/dashboard/glass-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ContactsTable } from "@/components/dashboard/contacts-table";
-import { contacts } from "@/lib/mock-data";
+import { DashboardSkeleton } from "@/components/dashboard/skeletons";
+import { useContacts } from "@/hooks/use-contacts";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -14,17 +15,22 @@ export const Route = createFileRoute("/_authenticated/contacts")({
 });
 
 function ContactsPage() {
-  const total = contacts.length;
-  const active = contacts.filter((c) => c.status === "active").length;
-  const unsubscribed = contacts.filter((c) => c.status === "unsubscribed").length;
-  const bounced = contacts.filter((c) => c.status === "bounced").length;
+  const { contacts, stats, isLoading, bulkDelete, bulkActivate } = useContacts({ limit: 100 });
 
   const statCards = [
-    { label: "Total Contacts", value: total, icon: Users, color: "text-primary" },
-    { label: "Active", value: active, icon: UserCheck, color: "text-success" },
-    { label: "Unsubscribed", value: unsubscribed, icon: UserX, color: "text-muted-foreground" },
-    { label: "Bounced", value: bounced, icon: ShieldAlert, color: "text-destructive" },
+    { label: "Total Contacts", value: stats.total, icon: Users, color: "text-primary" },
+    { label: "Active", value: stats.active, icon: UserCheck, color: "text-success" },
+    { label: "Unsubscribed", value: stats.unsubscribed, icon: UserX, color: "text-muted-foreground" },
+    { label: "Bounced", value: stats.bounced, icon: ShieldAlert, color: "text-destructive" },
   ];
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Contacts" subtitle="Manage your audience and segments">
+        <DashboardSkeleton />
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Contacts" subtitle="Manage your audience and segments">
@@ -69,7 +75,11 @@ function ContactsPage() {
             />
           ) : (
             <div className="p-4">
-              <ContactsTable data={contacts} />
+              <ContactsTable
+                data={contacts}
+                onBulkDelete={bulkDelete}
+                onBulkActivate={bulkActivate}
+              />
             </div>
           )}
         </GlassCard>

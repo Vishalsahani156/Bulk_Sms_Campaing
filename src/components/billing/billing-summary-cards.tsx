@@ -1,22 +1,24 @@
 import { AlertCircle, IndianRupee, MessageSquare, Wallet } from "lucide-react";
 import { GlassCard } from "@/components/dashboard/glass-card";
-import {
-  formatInr,
-  getBillableSmsCount,
-  calculateUsageChargeInr,
-  SMS_RATE_INR,
-} from "@/lib/billing-pricing";
-import type { Campaign } from "@/types/sms";
+import { formatInr, SMS_RATE_INR } from "@/lib/billing-pricing";
 import { cn } from "@/lib/utils";
 
+interface UsageItem {
+  campaignId: string;
+  campaignName: string;
+  smsCount: number;
+  costInr: number;
+  rateInr: number;
+}
+
 interface Props {
-  campaigns: Campaign[];
+  usage: UsageItem[];
   balanceInr: number;
 }
 
-export function BillingSummaryCards({ campaigns, balanceInr }: Props) {
-  const billableSms = getBillableSmsCount(campaigns);
-  const usageChargeInr = calculateUsageChargeInr(billableSms);
+export function BillingSummaryCards({ usage, balanceInr }: Props) {
+  const billableSms = usage.reduce((s, u) => s + u.smsCount, 0);
+  const usageChargeInr = usage.reduce((s, u) => s + u.costInr, 0);
   const amountDueInr = Math.max(0, +(usageChargeInr - balanceInr).toFixed(2));
 
   const cards = [
@@ -74,11 +76,4 @@ export function BillingSummaryCards({ campaigns, balanceInr }: Props) {
       ))}
     </section>
   );
-}
-
-export function useBillingSummary(campaigns: Campaign[], balanceInr: number) {
-  const billableSms = getBillableSmsCount(campaigns);
-  const usageChargeInr = calculateUsageChargeInr(billableSms);
-  const amountDueInr = Math.max(0, +(usageChargeInr - balanceInr).toFixed(2));
-  return { billableSms, usageChargeInr, amountDueInr };
 }

@@ -41,14 +41,10 @@ export function SmsTemplatesPage() {
   const handleSave = async (input: SmsTemplateInput) => {
     try {
       if (formMode === "edit" && editing) {
-        const updated = update(editing.id, input);
-        if (!updated) {
-          toast.error("Template not found");
-          return;
-        }
+        await update(editing.id, input);
         toast.success("Template updated");
       } else {
-        create(input);
+        await create(input);
         toast.success("Template created");
       }
     } catch {
@@ -60,14 +56,10 @@ export function SmsTemplatesPage() {
     if (!deleting) return;
     setIsDeleting(true);
     try {
-      const ok = remove(deleting.id);
-      if (ok) {
-        toast.success("Template deleted");
-        setDeleteOpen(false);
-        setDeleting(null);
-      } else {
-        toast.error("Template not found");
-      }
+      await remove(deleting.id);
+      toast.success("Template deleted");
+      setDeleteOpen(false);
+      setDeleting(null);
     } catch {
       toast.error("Could not delete template");
     } finally {
@@ -75,14 +67,10 @@ export function SmsTemplatesPage() {
     }
   };
 
-  const handleDuplicate = (template: SmsTemplate) => {
+  const handleDuplicate = async (template: SmsTemplate) => {
     try {
-      const copy = duplicate(template.id);
-      if (copy) {
-        toast.success(`Duplicated as "${copy.name}"`);
-      } else {
-        toast.error("Could not duplicate template");
-      }
+      await duplicate(template.id);
+      toast.success("Template duplicated");
     } catch {
       toast.error("Could not duplicate template");
     }
@@ -94,8 +82,9 @@ export function SmsTemplatesPage() {
       <div className="space-y-5">
         <GlassCard className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
+            <h2 className="text-base font-semibold">SMS Templates</h2>
             <p className="text-sm text-muted-foreground">
-              Manage reusable SMS copy with variables, segment counts, and status controls.
+              Reusable message templates with variable placeholders for campaigns.
             </p>
           </div>
           <Button
@@ -107,14 +96,15 @@ export function SmsTemplatesPage() {
           </Button>
         </GlassCard>
 
-        <TemplatesTable
-          templates={templates}
-          isLoading={isLoading}
-          onCreate={openCreate}
-          onEdit={openEdit}
-          onDelete={openDelete}
-          onDuplicate={handleDuplicate}
-        />
+        <GlassCard className="p-0 overflow-hidden">
+          <TemplatesTable
+            templates={templates}
+            isLoading={isLoading}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            onDuplicate={handleDuplicate}
+          />
+        </GlassCard>
       </div>
 
       <TemplateFormDialog
@@ -126,11 +116,11 @@ export function SmsTemplatesPage() {
       />
 
       <DeleteTemplateDialog
-        template={deleting}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        onConfirm={handleDeleteConfirm}
+        template={deleting}
         isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
       />
     </>
   );

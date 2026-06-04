@@ -1,50 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
-import type { BillingTransaction, BillingWallet, PaymentMethodType } from "@/types/billing";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  addCreditsFromPayment,
-  getBillingWallet,
-  listBillingTransactions,
-} from "@/lib/billing-storage";
+  getWallet,
+  getTransactions,
+  getPaymentMethods,
+  getUsageBreakdown,
+} from "@/lib/api/billing.api";
 
 export function useBilling() {
-  const [wallet, setWallet] = useState<BillingWallet | null>(null);
-  const [transactions, setTransactions] = useState<BillingTransaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(() => {
-    setWallet(getBillingWallet());
-    setTransactions(listBillingTransactions());
-    setIsLoading(false);
-  }, []);
+  const walletQuery = useQuery({
+    queryKey: ["billing", "wallet"],
+    queryFn: getWallet,
+  });
 
-  useEffect(() => {
-    const timer = window.setTimeout(refresh, 200);
-    return () => window.clearTimeout(timer);
-  }, [refresh]);
+  const transactionsQuery = useQuery({
+    queryKey: ["billing", "transactions"],
+    queryFn: () => getTransactions(),
+  });
 
-  const applyTopUp = useCallback(
-    (input: {
-      amountInr: number;
-      method: PaymentMethodType;
-      razorpayPaymentId: string;
-      razorpayOrderId: string;
-      note?: string;
-    }) => {
-      const updated = addCreditsFromPayment(input);
-      setWallet(updated);
-      setTransactions(updated.transactions);
-      return updated;
+  const methodsQuery = useQuery({
+    queryKey: ["billing", "payment-methods"],
+    queryFn: async () => {
+      const res = await getPaymentMethods();
+      return res.items;
     },
-    [],
-  );
+  });
+
+  const usageQuery = useQuery({
+    queryKey: ["billing", "usage"],
+    queryFn: getUsageBreakdown,
+  });
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["billing"] });
+  };
 
   return {
-    wallet,
-    balanceInr: wallet?.balanceInr ?? 0,
-    savedMethods: wallet?.savedMethods ?? [],
-    transactions,
-    isLoading,
+    wallet: walletQuery.data ?? null,
+    balanceInr: walletQuery.data?.balanceInr ?? 0,
+    savedMethods: methodsQuery.data ?? [],
+    transactions: transactionsQuery.data?.items ?? [],
+    usage: usageQuery.data ?? [],
+    isLoading: walletQuery.isLoading || transactionsQuery.isLoading,
     refresh,
-    applyTopUp,
   };
 }

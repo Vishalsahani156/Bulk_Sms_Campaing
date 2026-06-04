@@ -5,7 +5,9 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { GlassCard } from "@/components/dashboard/glass-card";
 import { CampaignsTable } from "@/components/dashboard/campaigns-table";
 import { ChannelPie, DeliveryChart } from "@/components/dashboard/charts";
-import { campaigns, channelData, kpiMetrics, seriesData } from "@/lib/mock-data";
+import { DashboardSkeleton } from "@/components/dashboard/skeletons";
+import { useAnalyticsOverview, useAnalyticsTimeseries, useAnalyticsChannels } from "@/hooks/use-analytics";
+import { useCampaigns } from "@/hooks/use-campaigns";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -18,6 +20,24 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function DashboardPage() {
+  const { data: overview, isLoading: overviewLoading } = useAnalyticsOverview();
+  const { data: timeseries, isLoading: seriesLoading } = useAnalyticsTimeseries("30d");
+  const { data: channels, isLoading: channelsLoading } = useAnalyticsChannels();
+  const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns({ limit: 5 });
+
+  if (overviewLoading || seriesLoading || channelsLoading || campaignsLoading) {
+    return (
+      <DashboardLayout title="Overview" subtitle="Real-time messaging performance across all channels">
+        <DashboardSkeleton />
+      </DashboardLayout>
+    );
+  }
+
+  const kpiMetrics = overview?.kpis ?? [];
+  const seriesData = timeseries?.points ?? [];
+  const channelData = channels?.slices ?? [];
+  const campaigns = campaignsData?.items ?? [];
+
   return (
     <DashboardLayout
       title="Overview"
@@ -70,9 +90,14 @@ function DashboardPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
         {[
-          { icon: Send, label: "Avg send speed", value: "12,400/s", hint: "+8% vs last week" },
-          { icon: MessageCircle, label: "Response rate", value: "31.2%", hint: "Industry avg 18%" },
-          { icon: Users, label: "Active contacts", value: "184,209", hint: "1,204 new this week" },
+          { icon: Send, label: "Avg send speed", value: "—", hint: "From live campaigns" },
+          { icon: MessageCircle, label: "Response rate", value: "—", hint: "Coming soon" },
+          {
+            icon: Users,
+            label: "Active contacts",
+            value: String(overview?.contactCount ?? 0),
+            hint: "Total in workspace",
+          },
         ].map((s, i) => (
           <GlassCard key={s.label} className="p-5" transition={{ delay: 0.1 + i * 0.05 }}>
             <div className="flex items-start gap-3">

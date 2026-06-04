@@ -7,13 +7,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { getAuthSession, signOutUser } from "@/lib/auth";
-import { MOCK_AUTH_CHANGE_EVENT } from "@/lib/mock-auth";
+import { getAuthSession, signOutUser, type AuthSession } from "@/lib/auth";
+import { clearAccessToken } from "@/lib/api/client";
 
 type AuthContextValue = {
-  session: Session | null;
-  user: User | null;
+  session: AuthSession | null;
+  user: AuthSession["user"] | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
   refreshSession: () => void;
@@ -22,7 +21,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshSession = useCallback(() => {
@@ -34,14 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshSession();
-
-    const onAuthChange = () => refreshSession();
-    window.addEventListener(MOCK_AUTH_CHANGE_EVENT, onAuthChange);
-    return () => window.removeEventListener(MOCK_AUTH_CHANGE_EVENT, onAuthChange);
   }, [refreshSession]);
 
   const signOut = useCallback(async () => {
     await signOutUser();
+    clearAccessToken();
     setSession(null);
   }, []);
 

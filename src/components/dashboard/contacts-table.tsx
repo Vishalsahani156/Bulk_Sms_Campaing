@@ -33,6 +33,8 @@ import type { Contact } from "@/types/sms";
 
 interface Props {
   data: Contact[];
+  onBulkDelete?: (ids: string[]) => Promise<void>;
+  onBulkActivate?: (ids: string[]) => Promise<void>;
 }
 
 type SortKey = "name" | "phone" | "group" | "status" | "addedAt";
@@ -41,7 +43,7 @@ type StatusFilter = "all" | Contact["status"];
 
 const PAGE_SIZE = 10;
 
-export function ContactsTable({ data }: Props) {
+export function ContactsTable({ data, onBulkDelete, onBulkActivate }: Props) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [groupFilter, setGroupFilter] = useState<"all" | string>("all");
@@ -111,14 +113,14 @@ export function ContactsTable({ data }: Props) {
     setSelectedIds(next);
   }
 
-  function handleBulkAction(action: "delete" | "export" | "activate") {
-    // In a real app, these would call server functions
-    if (action === "delete") {
-      const next = new Set(selectedIds);
-      // Simulate deletion by clearing selection; real app would mutate data
+  async function handleBulkAction(action: "delete" | "export" | "activate") {
+    const ids = Array.from(selectedIds);
+    if (action === "delete" && onBulkDelete && ids.length > 0) {
+      await onBulkDelete(ids);
       setSelectedIds(new Set());
     }
-    if (action === "activate") {
+    if (action === "activate" && onBulkActivate && ids.length > 0) {
+      await onBulkActivate(ids);
       setSelectedIds(new Set());
     }
     if (action === "export") {

@@ -2,10 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { redirectIfAuthenticated } from "@/lib/auth";
-import { mockRegister } from "@/lib/mock-auth";
+import { register as apiRegister } from "@/lib/api/auth.api";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthForm } from "@/components/auth/auth-form";
 import { useAuth } from "@/hooks/use-auth";
+import { ApiError } from "@/lib/api/client";
 
 type AuthSearch = {
   redirect?: string;
@@ -38,13 +39,13 @@ function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 400));
-      mockRegister(email, password);
+      await apiRegister({ email, password, name: email.split("@")[0] });
       refreshSession();
-      toast.success("Account created (demo) — signed in!");
+      toast.success("Account created — welcome to Pulse SMS!");
       navigate({ to: redirect ?? "/" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Registration failed");
+      const message = err instanceof ApiError ? err.message : "Registration failed";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ function RegisterPage() {
   return (
     <AuthShell
       title="Create your account"
-      subtitle="Demo mode — no real account is created; any email works."
+      subtitle="Start sending bulk SMS campaigns in minutes."
       footer={
         <p className="text-center text-xs text-muted-foreground mt-6">
           Already have an account?{" "}
@@ -76,7 +77,7 @@ function RegisterPage() {
         showPassword={showPassword}
         remember={false}
         showRemember={false}
-        useMockOAuth
+        useMockOAuth={false}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onTogglePassword={() => setShowPassword((s) => !s)}
@@ -84,7 +85,7 @@ function RegisterPage() {
         onSubmit={handleSubmit}
         oauthOnSuccess={() => {
           refreshSession();
-          toast.success("Signed in (demo)");
+          toast.success("Signed in");
           navigate({ to: redirect ?? "/" });
         }}
         oauthOnError={(message) => toast.error(message)}
