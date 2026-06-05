@@ -36,18 +36,38 @@ if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
 fi
 
 if ! psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2>&1; then
-  echo "Database connection failed for: $DATABASE_URL"
-  echo ""
-  echo "Create the local database once (requires sudo):"
-  echo ""
-  echo "  sudo -u postgres psql <<'SQL'"
-  echo "  CREATE USER pulse WITH PASSWORD 'pulse';"
-  echo "  CREATE DATABASE pulse_sms OWNER pulse;"
-  echo "  GRANT ALL PRIVILEGES ON DATABASE pulse_sms TO pulse;"
-  echo "  SQL"
-  echo ""
-  echo "Then run again: npm run setup:local"
-  exit 1
+  echo "Database not ready yet. Creating pulse user + pulse_sms database..."
+  if psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+    psql -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'pulse') THEN
+    CREATE USER pulse WITH PASSWORD 'pulse';
+  END IF;
+END
+$$;
+ALTER USER pulse WITH PASSWORD 'pulse';
+SELECT 'CREATE DATABASE pulse_sms OWNER pulse'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pulse_sms')\gexec
+GRANT ALL PRIVILEGES ON DATABASE pulse_sms TO pulse;
+SQL
+  else
+    echo "Could not connect as postgres. Create the database manually:"
+    echo ""
+    echo "  sudo -u postgres psql <<'SQL'"
+    echo "  CREATE USER pulse WITH PASSWORD 'pulse';"
+    echo "  CREATE DATABASE pulse_sms OWNER pulse;"
+    echo "  GRANT ALL PRIVILEGES ON DATABASE pulse_sms TO pulse;"
+    echo "  SQL"
+    echo ""
+    echo "Then run again: npm run setup:local"
+    exit 1
+  fi
+
+  if ! psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2>&1; then
+    echo "Database setup failed for: $DATABASE_URL"
+    exit 1
+  fi
 fi
 echo "PostgreSQL OK"
 
