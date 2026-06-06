@@ -5,3 +5,4 @@ export * from "./contacts.js";
 export * from "./templates.js";
 export * from "./campaigns.js";
 export * from "./notifications.js";
+export * from "./password-reset.js";

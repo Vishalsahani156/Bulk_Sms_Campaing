@@ -102,41 +102,47 @@ export async function createOrder(userId: string, amountInr: number) {
   return { orderId: order.id, amountPaise, amountInr, currency: "INR", keyId };
 }
 
-export async function verifyPayment(
-  userId: string,
-  data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
-) {
-  const { client, keySecret } = getRazorpay();
-  const expected = crypto
-    .createHmac("sha256", keySecret)
-    .update(`${data.razorpay_order_id}|${data.razorpay_payment_id}`)
-    .digest("hex");
-
-  if (expected !== data.razorpay_signature) {
-    throw badRequest("Payment verification failed: invalid signature");
-  }
-
+export async function processRazorpayPayment(input: {
+  userId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  paymentMethod?: string;
+  amountPaise?: number;
+}) {
   const existing = await db.query.billingTransactions.findFirst({
-    where: eq(billingTransactions.razorpayPaymentId, data.razorpay_payment_id),
+    where: eq(billingTransactions.razorpayPaymentId, input.razorpayPaymentId),
   });
   if (existing) {
-    const wallet = await getOrCreateWallet(userId);
-    return { ok: true as const, amountInr: formatDecimal(existing.amountInr), newBalance: formatDecimal(wallet.balanceInr) };
+    const wallet = await getOrCreateWallet(input.userId);
+    return {
+      ok: true as const,
+      amountInr: formatDecimal(existing.amountInr),
+      newBalance: formatDecimal(wallet.balanceInr),
+      duplicate: true,
+    };
   }
 
-  const order = await client.orders.fetch(data.razorpay_order_id);
-  const amountInr = Number(order.amount) / 100;
+  let amountInr = input.amountPaise ? input.amountPaise / 100 : undefined;
+  let paymentMethod = input.paymentMethod;
 
-  let paymentMethod: string | undefined;
-  try {
-    const payment = await client.payments.fetch(data.razorpay_payment_id);
-    paymentMethod = payment.method ?? undefined;
-  } catch {
-    paymentMethod = undefined;
+  if (amountInr === undefined) {
+    const { client } = getRazorpay();
+    const order = await client.orders.fetch(input.razorpayOrderId);
+    amountInr = Number(order.amount) / 100;
+  }
+
+  if (!paymentMethod) {
+    try {
+      const { client } = getRazorpay();
+      const payment = await client.payments.fetch(input.razorpayPaymentId);
+      paymentMethod = payment.method ?? undefined;
+    } catch {
+      paymentMethod = undefined;
+    }
   }
 
   const method = inferPaymentMethod(paymentMethod);
-  const wallet = await getOrCreateWallet(userId);
+  const wallet = await getOrCreateWallet(input.userId);
   const newBalance = formatDecimal(wallet.balanceInr) + amountInr;
 
   await db.transaction(async (tx) => {
@@ -147,8 +153,8 @@ export async function verifyPayment(
 
     const pending = await tx.query.billingTransactions.findFirst({
       where: and(
-        eq(billingTransactions.razorpayOrderId, data.razorpay_order_id),
-        eq(billingTransactions.userId, userId),
+        eq(billingTransactions.razorpayOrderId, input.razorpayOrderId),
+        eq(billingTransactions.userId, input.userId),
       ),
     });
 
@@ -156,30 +162,30 @@ export async function verifyPayment(
       await tx
         .update(billingTransactions)
         .set({
-          razorpayPaymentId: data.razorpay_payment_id,
+          razorpayPaymentId: input.razorpayPaymentId,
           method,
           note: "Wallet top-up",
         })
         .where(eq(billingTransactions.id, pending.id));
     } else {
       await tx.insert(billingTransactions).values({
-        userId,
+        userId: input.userId,
         walletId: wallet.id,
         type: "top_up",
         amountInr: amountInr.toFixed(2),
         method,
-        razorpayPaymentId: data.razorpay_payment_id,
-        razorpayOrderId: data.razorpay_order_id,
+        razorpayPaymentId: input.razorpayPaymentId,
+        razorpayOrderId: input.razorpayOrderId,
         note: "Wallet top-up",
       });
     }
 
     const existingMethod = await tx.query.savedPaymentMethods.findFirst({
-      where: and(eq(savedPaymentMethods.userId, userId), eq(savedPaymentMethods.type, method)),
+      where: and(eq(savedPaymentMethods.userId, input.userId), eq(savedPaymentMethods.type, method)),
     });
     if (!existingMethod) {
       await tx.insert(savedPaymentMethods).values({
-        userId,
+        userId: input.userId,
         type: method,
         label: `${method.toUpperCase()} — saved`,
         lastUsedAt: new Date(),
@@ -192,9 +198,36 @@ export async function verifyPayment(
     }
   });
 
-  await logAudit({ userId, action: "wallet.top_up", metadata: { amountInr, orderId: data.razorpay_order_id } });
+  await logAudit({
+    userId: input.userId,
+    action: "wallet.top_up",
+    metadata: { amountInr, orderId: input.razorpayOrderId },
+  });
 
-  return { ok: true as const, amountInr, newBalance };
+  return { ok: true as const, amountInr, newBalance, duplicate: false };
+}
+
+export async function verifyPayment(
+  userId: string,
+  data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+) {
+  const { keySecret } = getRazorpay();
+  const expected = crypto
+    .createHmac("sha256", keySecret)
+    .update(`${data.razorpay_order_id}|${data.razorpay_payment_id}`)
+    .digest("hex");
+
+  if (expected !== data.razorpay_signature) {
+    throw badRequest("Payment verification failed: invalid signature");
+  }
+
+  const result = await processRazorpayPayment({
+    userId,
+    razorpayOrderId: data.razorpay_order_id,
+    razorpayPaymentId: data.razorpay_payment_id,
+  });
+
+  return { ok: result.ok, amountInr: result.amountInr, newBalance: result.newBalance };
 }
 
 export async function listPaymentMethods(userId: string) {

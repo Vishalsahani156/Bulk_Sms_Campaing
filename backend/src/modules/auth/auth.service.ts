@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
-import { users, refreshTokens, wallets } from "../../db/schema/index.js";
+import { users, refreshTokens, wallets, passwordResetTokens } from "../../db/schema/index.js";
+import { sendEmail, getFrontendUrl } from "../../shared/email.js";
 import { getEnv } from "../../config/env.js";
 import { AppError, unauthorized, badRequest } from "../../shared/errors.js";
 import {
@@ -176,6 +177,57 @@ export async function getUserById(userId: string) {
   });
   if (!user) throw new AppError(404, "User not found");
   return user;
+}
+
+const PASSWORD_RESET_EXPIRES_MS = 60 * 60 * 1000;
+
+export async function requestPasswordReset(email: string) {
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, email.toLowerCase()),
+  });
+  if (!user) return;
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = hashToken(rawToken);
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRES_MS);
+
+  await db.insert(passwordResetTokens).values({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+  });
+
+  const resetUrl = `${getFrontendUrl()}/reset-password?token=${rawToken}`;
+  await sendEmail({
+    to: user.email,
+    subject: "Reset your Pulse SMS password",
+    text: `Reset your password using this link (expires in 1 hour):\n\n${resetUrl}`,
+    html: `<p>Reset your password using this link (expires in 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+  });
+}
+
+export async function resetPassword(token: string, password: string) {
+  const tokenHash = hashToken(token);
+  const stored = await db.query.passwordResetTokens.findFirst({
+    where: eq(passwordResetTokens.tokenHash, tokenHash),
+  });
+
+  if (!stored || stored.usedAt || stored.expiresAt < new Date()) {
+    throw badRequest("Invalid or expired reset token");
+  }
+
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, stored.userId));
+    await tx
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokens.id, stored.id));
+  });
 }
 
 export function sanitizeUser(user: typeof users.$inferSelect) {

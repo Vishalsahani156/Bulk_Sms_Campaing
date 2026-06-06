@@ -1,6 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
 import crypto from "node:crypto";
 import { getEnv } from "../../config/env.js";
+import {
+  handleRazorpayWebhook,
+  handleSmsDeliveryWebhook,
+} from "./webhooks.service.js";
 
 export const webhookRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post("/sms/delivery", async (request) => {
@@ -9,8 +13,9 @@ export const webhookRoutes: FastifyPluginAsync = async (fastify) => {
       status?: string;
       phone?: string;
     };
-    fastify.log.info({ body }, "SMS delivery webhook received");
-    return { ok: true };
+    const result = await handleSmsDeliveryWebhook(body);
+    fastify.log.info({ body, result }, "SMS delivery webhook processed");
+    return { ok: true, ...result };
   });
 
   fastify.post("/razorpay", async (request, reply) => {
@@ -28,7 +33,10 @@ export const webhookRoutes: FastifyPluginAsync = async (fastify) => {
       }
     }
 
-    fastify.log.info({ event: request.body }, "Razorpay webhook received");
-    return { ok: true };
+    const result = await handleRazorpayWebhook(
+      request.body as Parameters<typeof handleRazorpayWebhook>[0],
+    );
+    fastify.log.info({ result }, "Razorpay webhook processed");
+    return { ok: true, ...result };
   });
 };

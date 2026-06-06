@@ -180,3 +180,5 @@ export function startWorkers() {
   console.log("Workers started: sms-send, contact-import");
   return { smsWorker, importWorker };
 }
+
+startWorkers();

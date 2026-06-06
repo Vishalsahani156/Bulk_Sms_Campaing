@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import { z } from "zod";
 import {
   registerUser,
   loginUser,
@@ -6,7 +7,10 @@ import {
   logoutUser,
   getUserById,
   sanitizeUser,
+  requestPasswordReset,
+  resetPassword,
 } from "./auth.service.js";
+import { createAvatarUploadUrl } from "../../shared/s3.js";
 import {
   registerSchema,
   loginSchema,
@@ -90,12 +94,14 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post("/forgot-password", async (request) => {
-    forgotPasswordSchema.parse(request.body);
+    const body = forgotPasswordSchema.parse(request.body);
+    await requestPasswordReset(body.email);
     return { data: { ok: true } };
   });
 
   fastify.post("/reset-password", async (request) => {
-    resetPasswordSchema.parse(request.body);
+    const body = resetPasswordSchema.parse(request.body);
+    await resetPassword(body.token, body.password);
     return { data: { ok: true } };
   });
 };
@@ -116,5 +122,13 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
       .where(eq(users.id, request.user!.sub))
       .returning();
     return { data: sanitizeUser(updated) };
+  });
+
+  fastify.post("/me/avatar-upload-url", async (request) => {
+    const body = z
+      .object({ contentType: z.string().regex(/^image\//) })
+      .parse(request.body);
+    const result = await createAvatarUploadUrl(request.user!.sub, body.contentType);
+    return { data: result };
   });
 };
