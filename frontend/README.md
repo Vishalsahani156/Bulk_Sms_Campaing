@@ -8,6 +8,7 @@ TanStack Start + React dashboard. Deploy this folder on **Vercel**.
 |---------|-------|
 | Root Directory | `frontend` |
 | Build Command | `npm run build` |
+| Output Directory | `dist` |
 | Install Command | `npm install` |
 
 ## Environment variables

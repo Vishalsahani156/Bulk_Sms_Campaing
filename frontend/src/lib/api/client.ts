@@ -1,4 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001/v1";
+const PRODUCTION_API_BASE = "https://bulk-sms-campaing.onrender.com/v1";
+const LOCAL_API_BASE = "http://localhost:3001/v1";
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.PROD ? PRODUCTION_API_BASE : LOCAL_API_BASE);
 
 const ACCESS_TOKEN_KEY = "pulse_access_token";
 

@@ -69,18 +69,23 @@ https://<your-api>.onrender.com/v1/webhooks/razorpay
 ## 2. Frontend on Vercel
 
 1. Import the GitHub repo in [Vercel](https://vercel.com/new).
-2. **Root Directory**: `frontend`
+2. **Root Directory**: `frontend` (or leave repo root — root [`vercel.json`](vercel.json) also works)
 3. Framework is auto-detected via Nitro (`vercel` preset in [`frontend/vite.config.ts`](frontend/vite.config.ts)).
-4. Add environment variables:
+4. Confirm build settings (in [`frontend/vercel.json`](frontend/vercel.json)):
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+5. Add environment variables:
 
 | Variable | Example |
 |----------|---------|
-| `VITE_API_BASE_URL` | `https://pulse-sms-api.onrender.com/v1` |
+| `VITE_API_BASE_URL` | `https://bulk-sms-campaing.onrender.com/v1` |
 | `VITE_RAZORPAY_KEY_ID` | Your Razorpay public key |
 
-5. Deploy.
+6. Deploy.
 
-[`frontend/vercel.json`](frontend/vercel.json) sets `buildCommand` and `installCommand`. No output directory override is needed — Nitro generates Vercel output automatically.
+> **Vercel `NOT_FOUND` fix:** If you see a 404, the Root Directory is wrong or Output Directory is not `dist`. TanStack Start + Nitro writes the Vercel Build Output to `frontend/dist/` (includes `config.json` + server routes).
+
+[`frontend/vercel.json`](frontend/vercel.json) sets build command, install command, and **`outputDirectory: dist`** (required for Nitro on Vercel).
 
 ---
 

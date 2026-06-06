@@ -44,8 +44,16 @@ let cached: Env | null = null;
 
 function resolveProcessEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  if (!env.API_BASE_URL?.trim() && env.RENDER_EXTERNAL_URL?.trim()) {
-    env.API_BASE_URL = env.RENDER_EXTERNAL_URL.trim();
+  const isProd = env.NODE_ENV === "production";
+  const apiBase = env.API_BASE_URL?.trim();
+  const isLocalhostApi =
+    !apiBase ||
+    apiBase.startsWith("http://localhost") ||
+    apiBase.startsWith("http://127.0.0.1");
+
+  if (isProd && isLocalhostApi) {
+    env.API_BASE_URL =
+      env.RENDER_EXTERNAL_URL?.trim() || "https://bulk-sms-campaing.onrender.com";
   }
   return env;
 }
