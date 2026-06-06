@@ -20,6 +20,10 @@ dist-ssr
 backend/.env
 frontend/.env
 
+# Accidental nested install dirs
+backend/backend
+backend/frontend
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
