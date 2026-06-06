@@ -25,8 +25,15 @@ export async function buildApp() {
   });
 
   await app.register(helmet, { contentSecurityPolicy: false });
+  const corsOrigins = new Set(
+    env.CORS_ORIGIN.split(",")
+      .map((o) => o.trim())
+      .filter(Boolean),
+  );
+  if (env.APP_FRONTEND_URL) corsOrigins.add(env.APP_FRONTEND_URL);
+
   await app.register(cors, {
-    origin: env.CORS_ORIGIN.split(",").map((o) => o.trim()),
+    origin: [...corsOrigins],
     credentials: true,
   });
   await app.register(cookie);
@@ -44,6 +51,51 @@ export async function buildApp() {
 
   app.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
+  app.get("/", async (request, reply) => {
+    const payload = {
+      name: "Pulse SMS API",
+      status: "ok",
+      message: "Backend API is running. The web app UI is deployed separately on Vercel.",
+      endpoints: {
+        health: "/health",
+        docs: "/docs",
+        api: "/v1",
+        auth: "/v1/auth",
+      },
+    };
+
+    if (request.headers.accept?.includes("text/html")) {
+      return reply.type("text/html").send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pulse SMS API</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; color: #111; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    p { color: #444; }
+    code { background: #f4f4f5; padding: 0.1rem 0.35rem; border-radius: 0.25rem; }
+    ul { padding-left: 1.25rem; }
+    a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <h1>Pulse SMS API</h1>
+  <p>Backend is running. This URL is the <strong>API server</strong>, not the dashboard UI.</p>
+  <p>Deploy the frontend on <strong>Vercel</strong> and set <code>VITE_API_BASE_URL</code> to <code>${env.API_BASE_URL}/v1</code>.</p>
+  <ul>
+    <li><a href="/health">/health</a> — health check</li>
+    <li><a href="/docs">/docs</a> — API docs</li>
+    <li><code>/v1/*</code> — REST API routes</li>
+  </ul>
+</body>
+</html>`);
+    }
+
+    return payload;
+  });
+
   await app.register(authRoutes, { prefix: "/v1/auth" });
   await app.register(userRoutes, { prefix: "/v1/users" });
   await app.register(billingRoutes, { prefix: "/v1/billing" });
@@ -53,6 +105,15 @@ export async function buildApp() {
   await app.register(analyticsRoutes, { prefix: "/v1/analytics" });
   await app.register(notificationRoutes, { prefix: "/v1/notifications" });
   await app.register(webhookRoutes, { prefix: "/v1/webhooks" });
+
+  app.setNotFoundHandler((request, reply) => {
+    reply.status(404).send({
+      error: {
+        code: "NOT_FOUND",
+        message: `Route ${request.method} ${request.url} not found. API routes are under /v1. Try /health or /docs.`,
+      },
+    });
+  });
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof AppError) {
