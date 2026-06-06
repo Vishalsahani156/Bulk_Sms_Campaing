@@ -7,9 +7,9 @@ services:
     runtime: node
     rootDir: backend
     plan: free
-    buildCommand: npm install && npm run build
-    preDeployCommand: npm run db:migrate:prod
-    startCommand: npm start
+    buildCommand: bun install && bun run build
+    preDeployCommand: bun run db:migrate:prod
+    startCommand: bun run start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -44,8 +44,8 @@ services:
     runtime: node
     rootDir: backend
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:worker
+    buildCommand: bun install && bun run build
+    startCommand: bun run start:worker
     envVars:
       - key: NODE_ENV
         value: production

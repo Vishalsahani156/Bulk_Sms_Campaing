@@ -33,12 +33,14 @@ The blueprint creates:
 | Setting | Value |
 |---------|-------|
 | Root Directory | `backend` |
-| Build Command | `npm install && npm run build` |
-| Pre-Deploy Command | `npm run db:migrate:prod` |
-| Start Command | `npm start` |
+| Build Command | `bun install && bun run build` |
+| Pre-Deploy Command | `bun run db:migrate:prod` |
+| Start Command | `bun run start` |
 | Health Check Path | `/health` |
 
-Add a second **Background Worker** service with `npm run start:worker`.
+Add a second **Background Worker** service with build command `bun install && bun run build` and start command `bun run start:worker`.
+
+> **Important:** Render defaults to Bun. If your build command is only `bun install`, the TypeScript compile step is skipped and the service will crash with `Cannot find module .../dist/index.js`. Always include `bun run build` in the build command.
 
 ### Required backend env vars
 
