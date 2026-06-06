@@ -46,9 +46,24 @@ export function getEnv(): Env {
   if (cached) return cached;
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
-    console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
+    const fields = parsed.error.flatten().fieldErrors;
+    console.error("Invalid environment variables:");
+    for (const [key, messages] of Object.entries(fields)) {
+      console.error(`  ${key}: ${messages?.join(", ")}`);
+    }
+    console.error(
+      "Render checklist: DATABASE_URL, REDIS_URL, JWT_ACCESS_SECRET (32+ chars), JWT_REFRESH_SECRET (32+ chars), API_BASE_URL, CORS_ORIGIN",
+    );
     throw new Error("Invalid environment configuration");
   }
   cached = parsed.data;
+  if (
+    cached.NODE_ENV === "production" &&
+    cached.REDIS_URL === "redis://localhost:6379"
+  ) {
+    console.warn(
+      "WARNING: REDIS_URL is not set — using localhost default. Campaigns and workers will not work until REDIS_URL is configured on Render.",
+    );
+  }
   return cached;
 }

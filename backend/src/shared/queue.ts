@@ -1,10 +1,26 @@
 import { Queue } from "bullmq";
 import { getEnv } from "../config/env.js";
 
-const connection = { url: getEnv().REDIS_URL };
+let smsQueue: Queue | null = null;
+let importQueue: Queue | null = null;
 
-export const smsQueue = new Queue("sms-send", { connection });
-export const importQueue = new Queue("contact-import", { connection });
+function getConnection() {
+  return { url: getEnv().REDIS_URL };
+}
+
+function getSmsQueue() {
+  if (!smsQueue) {
+    smsQueue = new Queue("sms-send", { connection: getConnection() });
+  }
+  return smsQueue;
+}
+
+function getImportQueue() {
+  if (!importQueue) {
+    importQueue = new Queue("contact-import", { connection: getConnection() });
+  }
+  return importQueue;
+}
 
 export interface SmsJobPayload {
   campaignId: string;
@@ -19,14 +35,14 @@ export interface ImportJobPayload {
 }
 
 export async function enqueueSmsBatch(payload: SmsJobPayload) {
-  await smsQueue.add("send-batch", payload, {
+  await getSmsQueue().add("send-batch", payload, {
     attempts: 3,
     backoff: { type: "exponential", delay: 2000 },
   });
 }
 
 export async function enqueueContactImport(payload: ImportJobPayload) {
-  await importQueue.add("import-csv", payload, {
+  await getImportQueue().add("import-csv", payload, {
     attempts: 2,
   });
 }

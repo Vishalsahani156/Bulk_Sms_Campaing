@@ -11,6 +11,9 @@ export function getRedis(): Redis {
       options.tls = {};
     }
     redis = new Redis(url, options);
+    redis.on("error", (err) => {
+      console.error("Redis connection error:", err.message);
+    });
   }
   return redis;
 }

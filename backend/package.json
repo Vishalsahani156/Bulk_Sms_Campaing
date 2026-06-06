@@ -8,11 +8,11 @@
     "dev:worker": "tsx watch src/workers/index.ts",
     "build": "tsc",
     "postbuild": "mkdir -p dist/db/migrations && cp -r src/db/migrations/. dist/db/migrations/",
-    "start": "node dist/index.js",
-    "start:worker": "node dist/workers/index.js",
+    "start": "bun src/index.ts",
+    "start:worker": "bun src/workers/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:migrate:prod": "node dist/db/migrate.js",
+    "db:migrate:prod": "bun src/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "lint": "tsc --noEmit"
@@ -37,6 +37,7 @@
     "nodemailer": "^8.0.10",
     "pg": "^8.13.3",
     "razorpay": "^2.9.6",
+    "tsx": "^4.19.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.4",
-    "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }
 }

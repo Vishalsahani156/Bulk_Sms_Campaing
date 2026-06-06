@@ -16,12 +16,12 @@ Pulse SMS is split across two hosts:
 1. Push this repo to GitHub.
 2. In [Render Dashboard](https://dashboard.render.com/) → **New** → **Blueprint**.
 3. Connect the repo — Render reads [`render.yaml`](render.yaml).
-4. Set **manual** env vars when prompted:
+4. Set **manual** env vars when prompted (all required unless noted):
    - `API_BASE_URL` — your Render web service URL, e.g. `https://pulse-sms-api.onrender.com`
    - `CORS_ORIGIN` — your Vercel frontend URL, e.g. `https://your-app.vercel.app`
    - `APP_FRONTEND_URL` — same Vercel URL (password reset links)
-   - `REDIS_URL` — Render Key Value, Upstash, or other Redis (`rediss://` supported)
-   - `RAZORPAY_*` — if using payments
+   - `REDIS_URL` — **required** — Render Key Value, Upstash, or other Redis (`rediss://` supported)
+   - `RAZORPAY_*` — optional, if using payments
 
 The blueprint creates:
 - **pulse-sms-api** — web service (`/health` check, auto-migrate on deploy)
@@ -33,14 +33,14 @@ The blueprint creates:
 | Setting | Value |
 |---------|-------|
 | Root Directory | `backend` |
-| Build Command | `bun install && bun run build` |
+| Build Command | `bun install` |
 | Pre-Deploy Command | `bun run db:migrate:prod` |
 | Start Command | `bun run start` |
 | Health Check Path | `/health` |
 
-Add a second **Background Worker** service with build command `bun install && bun run build` and start command `bun run start:worker`.
+Add a second **Background Worker** service with build command `bun install` and start command `bun run start:worker`.
 
-> **Important:** Render defaults to Bun. If your build command is only `bun install`, the TypeScript compile step is skipped and the service will crash with `Cannot find module .../dist/index.js`. Always include `bun run build` in the build command.
+Production start scripts run TypeScript directly with **Bun** (no `dist/` compile step required on Render).
 
 ### Required backend env vars
 
@@ -102,10 +102,11 @@ After deploying, verify login → dashboard → refresh (wait 15+ min or shorten
 # Frontend (Vercel output)
 VITE_API_BASE_URL=https://your-api.onrender.com/v1 npm run build
 
-# Backend
+# Backend (Render — root directory must be `backend`)
 cd backend
-npm run build
-npm run db:migrate:prod   # requires DATABASE_URL
+bun install
+bun run db:migrate:prod   # requires DATABASE_URL
+bun run start
 ```
 
 ---

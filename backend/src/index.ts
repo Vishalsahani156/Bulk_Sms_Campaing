@@ -18,6 +18,11 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  if (err instanceof Error) {
+    console.error("Failed to start Pulse SMS API:", err.message);
+    if (err.stack) console.error(err.stack);
+  } else {
+    console.error("Failed to start Pulse SMS API:", err);
+  }
   process.exit(1);
 });
