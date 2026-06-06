@@ -52,10 +52,18 @@ export async function buildApp() {
   app.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
   app.get("/", async (request, reply) => {
+    const apiBaseUrl =
+      env.API_BASE_URL.startsWith("http://localhost") && env.NODE_ENV === "production"
+        ? `${request.protocol}://${request.hostname}`
+        : env.API_BASE_URL;
+    const viteApiBaseUrl = `${apiBaseUrl.replace(/\/$/, "")}/v1`;
+
     const payload = {
       name: "Pulse SMS API",
       status: "ok",
       message: "Backend API is running. The web app UI is deployed separately on Vercel.",
+      apiBaseUrl,
+      viteApiBaseUrl,
       endpoints: {
         health: "/health",
         docs: "/docs",
@@ -83,7 +91,7 @@ export async function buildApp() {
 <body>
   <h1>Pulse SMS API</h1>
   <p>Backend is running. This URL is the <strong>API server</strong>, not the dashboard UI.</p>
-  <p>Deploy the frontend on <strong>Vercel</strong> and set <code>VITE_API_BASE_URL</code> to <code>${env.API_BASE_URL}/v1</code>.</p>
+  <p>Deploy the frontend on <strong>Vercel</strong> and set <code>VITE_API_BASE_URL</code> to <code>${viteApiBaseUrl}</code>.</p>
   <ul>
     <li><a href="/health">/health</a> — health check</li>
     <li><a href="/docs">/docs</a> — API docs</li>

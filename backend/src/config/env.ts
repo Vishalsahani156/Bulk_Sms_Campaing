@@ -42,9 +42,17 @@ export type Env = z.infer<typeof envSchema>;
 
 let cached: Env | null = null;
 
+function resolveProcessEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  if (!env.API_BASE_URL?.trim() && env.RENDER_EXTERNAL_URL?.trim()) {
+    env.API_BASE_URL = env.RENDER_EXTERNAL_URL.trim();
+  }
+  return env;
+}
+
 export function getEnv(): Env {
   if (cached) return cached;
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = envSchema.safeParse(resolveProcessEnv());
   if (!parsed.success) {
     const fields = parsed.error.flatten().fieldErrors;
     console.error("Invalid environment variables:");

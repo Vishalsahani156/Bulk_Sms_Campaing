@@ -15,7 +15,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: API_BASE_URL
-        sync: false
+        value: https://bulk-sms-campaing.onrender.com
       - key: CORS_ORIGIN
         sync: false
       - key: APP_FRONTEND_URL
