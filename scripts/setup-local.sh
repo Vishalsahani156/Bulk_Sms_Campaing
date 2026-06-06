@@ -71,6 +71,9 @@ SQL
 fi
 echo "PostgreSQL OK"
 
+echo "==> Installing frontend dependencies..."
+npm install --prefix "$ROOT_DIR/frontend"
+
 echo "==> Installing backend dependencies..."
 npm install --prefix "$ROOT_DIR/backend"
 

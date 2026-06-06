@@ -4,7 +4,7 @@ Pulse SMS is split across two hosts:
 
 | Service | Platform | Directory |
 |---------|----------|-----------|
-| Frontend (TanStack Start) | **Vercel** | Repository root |
+| Frontend (TanStack Start) | **Vercel** | `frontend/` |
 | Backend API + Worker | **Render** | `backend/` |
 
 ---
@@ -69,8 +69,8 @@ https://<your-api>.onrender.com/v1/webhooks/razorpay
 ## 2. Frontend on Vercel
 
 1. Import the GitHub repo in [Vercel](https://vercel.com/new).
-2. **Root Directory**: leave as repository root (not `backend`).
-3. Framework is auto-detected via Nitro (`vercel` preset in [`vite.config.ts`](vite.config.ts)).
+2. **Root Directory**: `frontend`
+3. Framework is auto-detected via Nitro (`vercel` preset in [`frontend/vite.config.ts`](frontend/vite.config.ts)).
 4. Add environment variables:
 
 | Variable | Example |
@@ -80,7 +80,7 @@ https://<your-api>.onrender.com/v1/webhooks/razorpay
 
 5. Deploy.
 
-[`vercel.json`](vercel.json) sets `buildCommand` and `installCommand`. No output directory override is needed — Nitro generates Vercel output automatically.
+[`frontend/vercel.json`](frontend/vercel.json) sets `buildCommand` and `installCommand`. No output directory override is needed — Nitro generates Vercel output automatically.
 
 ---
 
@@ -100,6 +100,7 @@ After deploying, verify login → dashboard → refresh (wait 15+ min or shorten
 
 ```bash
 # Frontend (Vercel output)
+cd frontend
 VITE_API_BASE_URL=https://your-api.onrender.com/v1 npm run build
 
 # Backend (Render — root directory must be `backend`)
