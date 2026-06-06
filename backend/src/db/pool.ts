@@ -4,7 +4,8 @@ function needsSsl(connectionString: string): boolean {
   return (
     connectionString.includes("sslmode=require") ||
     connectionString.includes("neon.tech") ||
-    connectionString.includes("supabase.co")
+    connectionString.includes("supabase.co") ||
+    connectionString.includes("render.com")
   );
 }
 

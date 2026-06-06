@@ -19,3 +19,10 @@ Or run the shell script:
 
 Frontend only: `npm run dev:frontend`  
 Backend only: `npm run dev:backend`
+
+## Production deployment
+
+- **Frontend** → [Vercel](https://vercel.com) (repo root)
+- **Backend** → [Render](https://render.com) (`backend/`)
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step setup.

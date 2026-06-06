@@ -1,13 +1,16 @@
-import IORedis from "ioredis";
+import { Redis, type RedisOptions } from "ioredis";
 import { getEnv } from "../config/env.js";
 
-let redis: IORedis | null = null;
+let redis: Redis | null = null;
 
-export function getRedis(): IORedis {
+export function getRedis(): Redis {
   if (!redis) {
-    redis = new IORedis(getEnv().REDIS_URL, {
-      maxRetriesPerRequest: null,
-    });
+    const url = getEnv().REDIS_URL;
+    const options: RedisOptions = { maxRetriesPerRequest: null };
+    if (url.startsWith("rediss://")) {
+      options.tls = {};
+    }
+    redis = new Redis(url, options);
   }
   return redis;
 }

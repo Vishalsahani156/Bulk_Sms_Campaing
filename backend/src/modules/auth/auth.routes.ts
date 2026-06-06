@@ -21,25 +21,31 @@ import {
 import { db } from "../../db/client.js";
 import { eq } from "drizzle-orm";
 import { users } from "../../db/schema/index.js";
+import { authRateLimitPlugin } from "../../plugins/rate-limit-auth.plugin.js";
 
 const REFRESH_COOKIE = "pulse_refresh_token";
 
-function setRefreshCookie(reply: import("fastify").FastifyReply, token: string) {
-  reply.setCookie(REFRESH_COOKIE, token, {
+function cookieOptions() {
+  const isProd = process.env.NODE_ENV === "production";
+  return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: (isProd ? "none" : "lax") as "none" | "lax",
     path: "/v1/auth",
     maxAge: 7 * 24 * 60 * 60,
-  });
+  };
+}
+
+function setRefreshCookie(reply: import("fastify").FastifyReply, token: string) {
+  reply.setCookie(REFRESH_COOKIE, token, cookieOptions());
 }
 
 function clearRefreshCookie(reply: import("fastify").FastifyReply) {
-  reply.clearCookie(REFRESH_COOKIE, { path: "/v1/auth" });
+  reply.clearCookie(REFRESH_COOKIE, cookieOptions());
 }
 
 export const authRoutes: FastifyPluginAsync = async (fastify) => {
-  await fastify.register(import("../../plugins/rate-limit-auth.plugin.js").then((m) => m.authRateLimitPlugin));
+  await fastify.register(authRateLimitPlugin);
 
   fastify.post("/register", async (request, reply) => {
     const body = registerSchema.parse(request.body);

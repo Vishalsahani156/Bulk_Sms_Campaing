@@ -21,6 +21,7 @@ export async function buildApp() {
   const env = getEnv();
   const app = Fastify({
     logger: { level: env.NODE_ENV === "production" ? "info" : "debug" },
+    trustProxy: env.NODE_ENV === "production",
   });
 
   await app.register(helmet, { contentSecurityPolicy: false });

@@ -1,4 +1,4 @@
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import {
   campaigns,

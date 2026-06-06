@@ -8,7 +8,12 @@ export interface AuthSession {
   accessToken: string;
 }
 
+export function isBrowser() {
+  return typeof window !== "undefined";
+}
+
 export async function getAuthSession(): Promise<AuthSession | null> {
+  if (!isBrowser()) return null;
   const token = getAccessToken();
   if (!token) return null;
   try {
@@ -21,6 +26,9 @@ export async function getAuthSession(): Promise<AuthSession | null> {
 }
 
 export async function requireAuth({ location }: { location: { pathname: string; href: string } }) {
+  if (!isBrowser()) {
+    return { session: null as AuthSession | null };
+  }
   const session = await getAuthSession();
   if (!session) {
     throw redirect({
@@ -32,6 +40,7 @@ export async function requireAuth({ location }: { location: { pathname: string; 
 }
 
 export async function redirectIfAuthenticated({ search }: { search: { redirect?: string } }) {
+  if (!isBrowser()) return;
   const session = await getAuthSession();
   if (session) {
     const to =
@@ -45,8 +54,6 @@ export async function redirectIfAuthenticated({ search }: { search: { redirect?:
 export async function signOutUser() {
   await apiLogout();
 }
-
-import type { ApiUser } from "@/lib/api/auth.api";
 
 export function getUserDisplayName(user: ApiUser | null): string {
   if (!user) return "Guest";
