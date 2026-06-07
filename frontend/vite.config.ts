@@ -21,6 +21,19 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Keep one stable CSS filename so SSR HTML and client assets always match on Vercel.
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name?.endsWith(".css")) {
+              return "assets/styles[extname]";
+            }
+            return "assets/[name]-[hash][extname]";
+          },
+        },
+      },
+    },
     server: {
       port: 8080,
       strictPort: false,
