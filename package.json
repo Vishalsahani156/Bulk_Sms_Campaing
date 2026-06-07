@@ -1,0 +1,11 @@
+{
+  "name": "pulse-sms",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "vercel-build": "npm run build --prefix frontend"
+  }
+}

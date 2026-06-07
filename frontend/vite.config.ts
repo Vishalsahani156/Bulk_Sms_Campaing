@@ -10,6 +10,12 @@ export default defineConfig({
   // Required for Vercel: Lovable config skips Nitro unless explicitly enabled.
   nitro: {
     preset: process.env.NITRO_PRESET ?? "vercel",
+    vercel: {
+      functions: {
+        // Match package.json engines — avoids unsupported runtime in serverless output.
+        runtime: "nodejs20.x",
+      },
+    },
     output: {
       // Single output dir: client assets + serverless function + config.json (Vercel Build Output API v3).
       dir: "dist",
