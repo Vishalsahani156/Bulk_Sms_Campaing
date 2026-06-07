@@ -10,6 +10,10 @@ export default defineConfig({
   // Required for Vercel: Lovable config skips Nitro unless explicitly enabled.
   nitro: {
     preset: process.env.NITRO_PRESET ?? "vercel",
+    output: {
+      // Lovable defaults serverDir to dist/server, but Vercel needs functions/__server.func
+      serverDir: "dist/functions/__server.func",
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

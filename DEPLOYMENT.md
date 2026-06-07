@@ -83,7 +83,7 @@ https://<your-api>.onrender.com/v1/webhooks/razorpay
 
 6. Deploy.
 
-> **Vercel `NOT_FOUND` fix:** If you see a 404, the Root Directory is wrong or Output Directory is not `dist`. TanStack Start + Nitro writes the Vercel Build Output to `frontend/dist/` (includes `config.json` + server routes).
+> **Vercel `NOT_FOUND` fix:** Root Directory must be `frontend` and Output Directory must be `dist`. Nitro writes a serverless function to `dist/functions/__server.func/` (required for SSR routes like `/login`).
 
 [`frontend/vercel.json`](frontend/vercel.json) sets build command, install command, and **`outputDirectory: dist`** (required for Nitro on Vercel).
 
