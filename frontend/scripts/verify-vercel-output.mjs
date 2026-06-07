@@ -1,19 +1,13 @@
 import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
 
-const required = [
-  "dist/config.json",
-  "dist/functions/__server.func/index.mjs",
-  "dist/client",
-];
+const required = ["dist/config.json", "dist/functions/__server.func/index.mjs", "dist/client"];
 
 const missing = required.filter((path) => !existsSync(path));
 if (missing.length > 0) {
   console.error("Vercel build output is incomplete. Missing:");
   for (const path of missing) console.error(`  - ${path}`);
-  console.error(
-    "\nFix: set Vercel Output Directory to 'dist' (not 'dist/client').",
-  );
+  console.error("\nFix: set Vercel Output Directory to 'dist' (not 'dist/client').");
   process.exit(1);
 }
 

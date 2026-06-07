@@ -44,6 +44,12 @@ let cached: Env | null = null;
 
 function resolveProcessEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
+
+  // Render sets RENDER=true but often leaves NODE_ENV unset — treat as production.
+  if (env.RENDER === "true" && env.NODE_ENV !== "production") {
+    env.NODE_ENV = "production";
+  }
+
   const isProd = env.NODE_ENV === "production";
   const apiBase = env.API_BASE_URL?.trim();
   const isLocalhostApi =
@@ -56,6 +62,11 @@ function resolveProcessEnv(): NodeJS.ProcessEnv {
       env.RENDER_EXTERNAL_URL?.trim() || "https://bulk-sms-campaing.onrender.com";
   }
   return env;
+}
+
+/** True when running a public deployment (production or Render). */
+export function isProductionDeploy(): boolean {
+  return getEnv().NODE_ENV === "production" || process.env.RENDER === "true";
 }
 
 export function getEnv(): Env {

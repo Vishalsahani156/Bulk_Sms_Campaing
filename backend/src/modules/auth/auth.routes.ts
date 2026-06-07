@@ -22,11 +22,12 @@ import { db } from "../../db/client.js";
 import { eq } from "drizzle-orm";
 import { users } from "../../db/schema/index.js";
 import { authRateLimitPlugin } from "../../plugins/rate-limit-auth.plugin.js";
+import { isProductionDeploy } from "../../config/env.js";
 
 const REFRESH_COOKIE = "pulse_refresh_token";
 
 function cookieOptions() {
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd = isProductionDeploy();
   return {
     httpOnly: true,
     secure: isProd,

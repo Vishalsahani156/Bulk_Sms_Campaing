@@ -32,8 +32,33 @@ export async function buildApp() {
   );
   if (env.APP_FRONTEND_URL) corsOrigins.add(env.APP_FRONTEND_URL);
 
+  const allowVercelPreview =
+    env.NODE_ENV === "production" &&
+    !env.CORS_ORIGIN.split(",").some((o) => o.trim().includes("vercel.app"));
+
   await app.register(cors, {
-    origin: [...corsOrigins],
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (corsOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      if (allowVercelPreview) {
+        try {
+          const hostname = new URL(origin).hostname;
+          if (hostname.endsWith(".vercel.app") || hostname === "vercel.app") {
+            callback(null, true);
+            return;
+          }
+        } catch {
+          // ignore invalid origin URL
+        }
+      }
+      callback(null, false);
+    },
     credentials: true,
   });
   await app.register(cookie);

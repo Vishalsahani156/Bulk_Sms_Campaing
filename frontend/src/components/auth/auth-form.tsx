@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { lovable } from "@/integrations/lovable";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
 
 export function OAuthButtons({
   onSuccess,
@@ -14,6 +15,10 @@ export function OAuthButtons({
   onError: (message: string) => void;
 }) {
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
 
   const handleOAuth = async (provider: "google" | "apple") => {
     setOauthLoading(provider);
@@ -200,16 +205,18 @@ export function AuthForm({
     <>
       <OAuthButtons onSuccess={oauthOnSuccess} onError={oauthOnError} />
 
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border/60" />
+      {isSupabaseConfigured() && (
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border/60" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-card/60 px-3 text-[10px] uppercase tracking-wider text-muted-foreground">
+              or continue with email
+            </span>
+          </div>
         </div>
-        <div className="relative flex justify-center">
-          <span className="bg-card/60 px-3 text-[10px] uppercase tracking-wider text-muted-foreground">
-            or continue with email
-          </span>
-        </div>
-      </div>
+      )}
 
       <form onSubmit={onSubmit} className="space-y-4">
         <EmailPasswordFields
