@@ -77,7 +77,6 @@ function RegisterPage() {
         showPassword={showPassword}
         remember={false}
         showRemember={false}
-        useMockOAuth={false}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onTogglePassword={() => setShowPassword((s) => !s)}

@@ -5,29 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { lovable } from "@/integrations/lovable";
-import { mockOAuthSignIn } from "@/lib/mock-auth";
 
 export function OAuthButtons({
   onSuccess,
   onError,
-  useMockOAuth = false,
 }: {
   onSuccess: () => void;
   onError: (message: string) => void;
-  useMockOAuth?: boolean;
 }) {
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
   const handleOAuth = async (provider: "google" | "apple") => {
     setOauthLoading(provider);
     try {
-      if (useMockOAuth) {
-        await new Promise((r) => setTimeout(r, 500));
-        mockOAuthSignIn(provider);
-        onSuccess();
-        setOauthLoading(null);
-        return;
-      }
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
       });
@@ -186,7 +176,6 @@ export function AuthForm({
   onSubmit,
   oauthOnSuccess,
   oauthOnError,
-  useMockOAuth,
   children,
 }: {
   mode: "signin" | "signup";
@@ -205,12 +194,11 @@ export function AuthForm({
   onSubmit: (e: FormEvent) => void;
   oauthOnSuccess: () => void;
   oauthOnError: (message: string) => void;
-  useMockOAuth?: boolean;
   children?: ReactNode;
 }) {
   return (
     <>
-      <OAuthButtons onSuccess={oauthOnSuccess} onError={oauthOnError} useMockOAuth={useMockOAuth} />
+      <OAuthButtons onSuccess={oauthOnSuccess} onError={oauthOnError} />
 
       <div className="relative my-5">
         <div className="absolute inset-0 flex items-center">

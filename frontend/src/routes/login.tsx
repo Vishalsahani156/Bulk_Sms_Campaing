@@ -97,7 +97,6 @@ function LoginPage() {
         showPassword={showPassword}
         remember={remember}
         showRemember
-        useMockOAuth={false}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onTogglePassword={() => setShowPassword((s) => !s)}

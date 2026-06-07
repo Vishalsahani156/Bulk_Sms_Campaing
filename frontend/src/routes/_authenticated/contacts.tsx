@@ -20,7 +20,12 @@ function ContactsPage() {
   const statCards = [
     { label: "Total Contacts", value: stats.total, icon: Users, color: "text-primary" },
     { label: "Active", value: stats.active, icon: UserCheck, color: "text-success" },
-    { label: "Unsubscribed", value: stats.unsubscribed, icon: UserX, color: "text-muted-foreground" },
+    {
+      label: "Unsubscribed",
+      value: stats.unsubscribed,
+      icon: UserX,
+      color: "text-muted-foreground",
+    },
     { label: "Bounced", value: stats.bounced, icon: ShieldAlert, color: "text-destructive" },
   ];
 

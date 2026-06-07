@@ -52,10 +52,7 @@ export function ContactsTable({ data, onBulkDelete, onBulkActivate }: Props) {
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const groups = useMemo(
-    () => Array.from(new Set(data.map((c) => c.group))).sort(),
-    [data],
-  );
+  const groups = useMemo(() => Array.from(new Set(data.map((c) => c.group))).sort(), [data]);
 
   const filtered = useMemo(() => {
     return data
@@ -74,7 +71,7 @@ export function ContactsTable({ data, onBulkDelete, onBulkActivate }: Props) {
         if (sortKey === "addedAt") {
           return (new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime()) * dir;
         }
-        return (a[sortKey].localeCompare(b[sortKey])) * dir;
+        return a[sortKey].localeCompare(b[sortKey]) * dir;
       });
   }, [data, query, statusFilter, groupFilter, sortKey, sortDir]);
 

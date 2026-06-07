@@ -99,7 +99,11 @@
 
   /* Premium gradients & effects */
   --gradient-primary: linear-gradient(135deg, oklch(0.72 0.18 280), oklch(0.7 0.18 230));
-  --gradient-surface: linear-gradient(180deg, oklch(0.22 0.018 270 / 80%), oklch(0.18 0.013 270 / 60%));
+  --gradient-surface: linear-gradient(
+    180deg,
+    oklch(0.22 0.018 270 / 80%),
+    oklch(0.18 0.013 270 / 60%)
+  );
   --gradient-glow: radial-gradient(circle at 30% 0%, oklch(0.72 0.18 280 / 25%), transparent 60%);
   --shadow-glow: 0 0 40px -10px oklch(0.72 0.18 280 / 45%);
   --shadow-elevated: 0 20px 60px -20px oklch(0 0 0 / 60%), 0 0 0 1px oklch(1 0 0 / 4%);
@@ -156,7 +160,8 @@
   --gradient-surface: linear-gradient(180deg, oklch(1 0 0 / 80%), oklch(0.97 0.006 270 / 60%));
   --glass-bg: oklch(1 0 0 / 65%);
   --glass-border: oklch(0.2 0.015 270 / 8%);
-  --shadow-elevated: 0 20px 60px -20px oklch(0.5 0.05 270 / 25%), 0 0 0 1px oklch(0.2 0.015 270 / 5%);
+  --shadow-elevated:
+    0 20px 60px -20px oklch(0.5 0.05 270 / 25%), 0 0 0 1px oklch(0.2 0.015 270 / 5%);
 }
 
 @layer base {
@@ -174,14 +179,24 @@
   }
 
   body {
-    font-family: ui-sans-serif, system-ui, -apple-system, "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Inter",
+      "SF Pro Display",
+      "Segoe UI",
+      sans-serif;
     background-image:
       radial-gradient(ellipse at 0% -10%, oklch(0.72 0.18 280 / 12%), transparent 50%),
       radial-gradient(ellipse at 100% 0%, oklch(0.7 0.18 230 / 10%), transparent 50%);
     background-attachment: fixed;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     letter-spacing: -0.02em;
     font-weight: 600;
   }
@@ -235,8 +250,12 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 .skeleton-shimmer {

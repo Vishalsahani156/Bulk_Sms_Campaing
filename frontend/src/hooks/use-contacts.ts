@@ -1,9 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getContacts,
-  bulkDeleteContacts,
-  bulkActivateContacts,
-} from "@/lib/api/contacts.api";
+import { getContacts, bulkDeleteContacts, bulkActivateContacts } from "@/lib/api/contacts.api";
 
 export function useContacts(params?: {
   status?: string;

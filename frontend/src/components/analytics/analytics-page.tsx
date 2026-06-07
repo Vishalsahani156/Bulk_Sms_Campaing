@@ -95,10 +95,7 @@ export function AnalyticsPage() {
               variant="ghost"
               size="sm"
               onClick={() => setPeriod(p.id)}
-              className={cn(
-                "text-xs h-8",
-                period === p.id && "bg-primary/15 text-primary",
-              )}
+              className={cn("text-xs h-8", period === p.id && "bg-primary/15 text-primary")}
             >
               {p.label}
             </Button>

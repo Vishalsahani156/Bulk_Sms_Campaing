@@ -19,7 +19,12 @@ interface Props {
 }
 
 const statusFilters: (CampaignStatus | "all")[] = [
-  "all", "sending", "completed", "scheduled", "draft", "failed",
+  "all",
+  "sending",
+  "completed",
+  "scheduled",
+  "draft",
+  "failed",
 ];
 
 export function CampaignsTable({ data }: Props) {
@@ -101,7 +106,9 @@ export function CampaignsTable({ data }: Props) {
                     <div className="font-medium text-foreground">{c.name}</div>
                     <div className="text-xs text-muted-foreground font-mono">{c.id}</div>
                   </td>
-                  <td className="px-4 py-3.5"><StatusBadge status={c.status} /></td>
+                  <td className="px-4 py-3.5">
+                    <StatusBadge status={c.status} />
+                  </td>
                   <td className="px-4 py-3.5">
                     <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted/60 text-muted-foreground">
                       {c.sender}
@@ -147,10 +154,16 @@ export function CampaignsTable({ data }: Props) {
           </table>
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 text-xs text-muted-foreground">
-          <span>Showing {rows.length} of {data.length} campaigns</span>
+          <span>
+            Showing {rows.length} of {data.length} campaigns
+          </span>
           <div className="flex gap-1">
-            <Button variant="outline" size="sm" className="h-7">Previous</Button>
-            <Button variant="outline" size="sm" className="h-7">Next</Button>
+            <Button variant="outline" size="sm" className="h-7">
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" className="h-7">
+              Next
+            </Button>
           </div>
         </div>
       </div>

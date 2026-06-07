@@ -30,8 +30,9 @@ export function KpiCard({ metric, index = 0 }: KpiCardProps) {
         <div
           className={cn(
             "flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
-            isUp ? "bg-[oklch(0.72_0.17_155_/_15%)] text-[oklch(0.82_0.17_155)]"
-                 : "bg-[oklch(0.65_0.22_25_/_15%)] text-[oklch(0.78_0.2_25)]",
+            isUp
+              ? "bg-[oklch(0.72_0.17_155_/_15%)] text-[oklch(0.82_0.17_155)]"
+              : "bg-[oklch(0.65_0.22_25_/_15%)] text-[oklch(0.78_0.2_25)]",
           )}
         >
           {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}

@@ -4,17 +4,17 @@ TanStack Start + React dashboard. Deploy this folder on **Vercel**.
 
 ## Vercel settings
 
-| Setting | Value |
-|---------|-------|
-| Root Directory | `frontend` |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Install Command | `npm install` |
+| Setting          | Value           |
+| ---------------- | --------------- |
+| Root Directory   | `frontend`      |
+| Build Command    | `npm run build` |
+| Output Directory | `dist`          |
+| Install Command  | `npm install`   |
 
 ## Environment variables
 
-| Variable | Example |
-|----------|---------|
+| Variable            | Example                                     |
+| ------------------- | ------------------------------------------- |
 | `VITE_API_BASE_URL` | `https://bulk-sms-campaing.onrender.com/v1` |
 
 ## Local dev

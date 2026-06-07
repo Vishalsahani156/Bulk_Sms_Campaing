@@ -6,7 +6,11 @@ import { GlassCard } from "@/components/dashboard/glass-card";
 import { CampaignsTable } from "@/components/dashboard/campaigns-table";
 import { ChannelPie, DeliveryChart } from "@/components/dashboard/charts";
 import { DashboardSkeleton } from "@/components/dashboard/skeletons";
-import { useAnalyticsOverview, useAnalyticsTimeseries, useAnalyticsChannels } from "@/hooks/use-analytics";
+import {
+  useAnalyticsOverview,
+  useAnalyticsTimeseries,
+  useAnalyticsChannels,
+} from "@/hooks/use-analytics";
 import { useCampaigns } from "@/hooks/use-campaigns";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -27,7 +31,10 @@ function DashboardPage() {
 
   if (overviewLoading || seriesLoading || channelsLoading || campaignsLoading) {
     return (
-      <DashboardLayout title="Overview" subtitle="Real-time messaging performance across all channels">
+      <DashboardLayout
+        title="Overview"
+        subtitle="Real-time messaging performance across all channels"
+      >
         <DashboardSkeleton />
       </DashboardLayout>
     );

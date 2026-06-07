@@ -3,10 +3,14 @@ import type { CampaignStatus } from "@/types/sms";
 
 const styles: Record<CampaignStatus, string> = {
   draft: "bg-muted text-muted-foreground border-border",
-  scheduled: "bg-[oklch(0.7_0.16_230_/_15%)] text-[oklch(0.82_0.16_230)] border-[oklch(0.7_0.16_230_/_30%)]",
-  sending: "bg-[oklch(0.78_0.16_75_/_15%)] text-[oklch(0.86_0.16_75)] border-[oklch(0.78_0.16_75_/_30%)]",
-  completed: "bg-[oklch(0.72_0.17_155_/_15%)] text-[oklch(0.84_0.17_155)] border-[oklch(0.72_0.17_155_/_30%)]",
-  failed: "bg-[oklch(0.65_0.22_25_/_15%)] text-[oklch(0.8_0.2_25)] border-[oklch(0.65_0.22_25_/_30%)]",
+  scheduled:
+    "bg-[oklch(0.7_0.16_230_/_15%)] text-[oklch(0.82_0.16_230)] border-[oklch(0.7_0.16_230_/_30%)]",
+  sending:
+    "bg-[oklch(0.78_0.16_75_/_15%)] text-[oklch(0.86_0.16_75)] border-[oklch(0.78_0.16_75_/_30%)]",
+  completed:
+    "bg-[oklch(0.72_0.17_155_/_15%)] text-[oklch(0.84_0.17_155)] border-[oklch(0.72_0.17_155_/_30%)]",
+  failed:
+    "bg-[oklch(0.65_0.22_25_/_15%)] text-[oklch(0.8_0.2_25)] border-[oklch(0.65_0.22_25_/_30%)]",
 };
 
 const labels: Record<CampaignStatus, string> = {

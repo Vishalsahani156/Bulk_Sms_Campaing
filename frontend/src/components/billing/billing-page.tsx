@@ -25,10 +25,7 @@ export function BillingPage() {
   const email = user?.email ?? undefined;
   const razorpayReady = isRazorpayConfigured();
 
-  const handleTopUpSuccess = (result: {
-    amountInr: number;
-    newBalance: number;
-  }) => {
+  const handleTopUpSuccess = (result: { amountInr: number; newBalance: number }) => {
     refresh();
     toast.success(
       `Added ${result.amountInr.toLocaleString("en-IN", { style: "currency", currency: "INR" })} to your wallet`,
