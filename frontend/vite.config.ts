@@ -11,7 +11,8 @@ export default defineConfig({
   nitro: {
     preset: process.env.NITRO_PRESET ?? "vercel",
     output: {
-      // Lovable defaults serverDir to dist/server, but Vercel needs functions/__server.func
+      // Single output dir: client assets + serverless function + config.json (Vercel Build Output API v3).
+      dir: "dist",
       serverDir: "dist/functions/__server.func",
     },
   },

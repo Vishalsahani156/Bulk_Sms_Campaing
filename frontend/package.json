@@ -1,14 +1,14 @@
 {
   "name": "pulse-sms-frontend",
   "private": true,
-  "sideEffects": false,
+  "sideEffects": ["**/*.css"],
   "type": "module",
   "engines": {
     "node": "20.x"
   },
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/verify-vercel-output.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
